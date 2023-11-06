@@ -1,5 +1,5 @@
 # opensearch-vectorsearch-sample
-This repo contains various samples on how to do vector search via OpenSearch vector engine. These samples works with OpenSearch Project. 
+This repo contains various samples on how to do vector search via [OpenSearch](https://opensearch.org/) [vector engine](https://opensearch.org/platform/search/vector-database.html). These samples works with OpenSearch Project. 
 We encourage you to join the [public Slack](https://opensearch.org/slack.html) for questions.
 
 ## Benchmarking
