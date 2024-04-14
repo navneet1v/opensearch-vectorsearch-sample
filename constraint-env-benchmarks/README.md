@@ -17,8 +17,14 @@ docker build -f Dockerfile_2_13 -t constraint-env-bench:2-13 .
 ```
 
 ## Running the image
+### 2.13 and 2.14
 ```
 docker run -d -it -m 3g --cpus 4 -p 0.0.0.0:9200:9200 <IMAGE-NAME>
+```
+
+### Memory Fix
+```
+docker run -d -it -m 2.5g --cpus 4 -p 0.0.0.0:9200:9200 <IMAGE-NAME>
 ```
 
 ## SSH in the container
