@@ -1,22 +1,15 @@
 #!/bin/bash
 set -ex
-cd /home/ci-runner/opensearch-2.14.0-SNAPSHOT
+cd /home/ci-runner/opensearch
 
-#./bin/opensearch-plugin install file:///home/ci-runner/k-NN/artifacts/plugins/opensearch-knn-2.14.0.0-SNAPSHOT.zip  --verbose --batch
-
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ci-runner/opensearch-2.14.0-SNAPSHOT/plugins/opensearch-knn/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ci-runner/opensearch/plugins/opensearch-knn/lib
 
 function usage() {
     echo "Usage: $0 [args]"
     echo ""
     echo "Arguments:"
-    echo -e "-v VERSION\t[Required] OpenSearch version."
-    echo -e "-q QUALIFIER\t[Optional] Version qualifier."
-    echo -e "-s SNAPSHOT\t[Optional] Build a snapshot, default is 'false'."
-    echo -e "-p PLATFORM\t[Optional] Platform, ignored."
-    echo -e "-a ARCHITECTURE\t[Optional] Build architecture, ignored."
-    echo -e "-o OUTPUT\t[Optional] Output path, default is 'artifacts'."
-    echo -e "-h help"
+    echo -e "-h HEAP\t[Required] Heap size for Opensearch cluster"
+    echo -e "-c CB_LIMIT\t[Required] Circuit Breaker limit for kNN"
 }
 
 
@@ -43,6 +36,9 @@ done
 echo "CB"
 echo $CB_LIMIT
 
+rm config/opensearch.yml
+touch config/opensearch.yml
+
 cat <<EOT >> config/opensearch.yml
 network.host: 0.0.0.0
 cluster.name: "opensearch"
@@ -54,6 +50,12 @@ EOT
 
 sed -i -e "s/-Xms$HEAP/-Xms$HEAP/g" config/jvm.options
 
+DIR=/home/ci-runner/opensearch/plugins/opensearch-knn
+
+if [ ! -d "$DIR" ]; then
+    echo "Installing k-NN plugin"
+    ./bin/opensearch-plugin install file:///home/ci-runner/k-NN/artifacts/plugins/opensearch-knn.zip  --verbose --batch
+fi
 echo "Running Opensearch"
-./bin/opensearch-plugin install file:///home/ci-runner/k-NN/artifacts/plugins/opensearch-knn-2.14.0.0-SNAPSHOT.zip  --verbose --batch
+
 ./bin/opensearch
