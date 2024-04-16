@@ -42,5 +42,5 @@ while true; do
     anno_rss=$(get_rss_usage "$OS_PROCESS_ID" "RssAnon")
     file_rss=$(get_rss_usage "$OS_PROCESS_ID" "RssFile")
     echo "$timestamp,$memory_usage,$cpu_utilization,$anno_rss,$file_rss"
-    sleep 5  # Adjust interval as needed
+    # we don't need sleep time here as getting all above stats itself take like 4sec
 done

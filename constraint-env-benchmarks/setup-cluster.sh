@@ -2,6 +2,8 @@
 set -ex
 cd /home/ci-runner/opensearch
 
+# Enable the jemalloc and sets the path for k-NN libraries
+export LD_PRELOAD=/usr/lib64/libjemalloc.so.1
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ci-runner/opensearch/plugins/opensearch-knn/lib
 
 function usage() {
