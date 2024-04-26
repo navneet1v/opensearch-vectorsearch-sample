@@ -50,7 +50,8 @@ knn.faiss.avx2.disabled: true
 knn.memory.circuit_breaker.limit: $CB_LIMIT%
 EOT
 
-sed -i -e "s/-Xms$HEAP/-Xms$HEAP/g" config/jvm.options
+sed -i -e "s/-Xms1g/-Xms$HEAP/g" config/jvm.options
+sed -i -e "s/-Xmx1g/-Xmx$HEAP/g" config/jvm.options
 
 DIR=/home/ci-runner/opensearch/plugins/opensearch-knn
 
