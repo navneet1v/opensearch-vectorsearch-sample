@@ -1,0 +1,26 @@
+FROM opensearchstaging/ci-runner:ci-runner-centos7-opensearch-build-v3
+USER root
+RUN yum install jemalloc lapack-devel blas-devel wget tar -y
+ENV JAVA_HOME="/opt/java/openjdk-21"
+ENV OS_VERSION="3.0.0"
+ENV IS_SNAPSHOT="true"
+# Build Lucene
+ADD build-lucene.sh /
+RUN bash /build-lucene.sh
+# Build Opensearch
+ENV OS_BRANCH floatVectorValues
+ADD build-os-repo.sh /
+RUN bash /build-os-repo.sh
+# Build k-NN
+ENV KNN_BRANCH floatVectorValues
+ADD build-knn-repo.sh /
+RUN bash /build-knn-repo.sh
+
+COPY setup-cluster.sh /home/ci-runner
+# Change ownership of folders to ci-runner user as opensearch cannot run as root
+RUN cd /home/ci-runner
+RUN chown -R 1000:1000 opensearch
+RUN chown -R 1000:1000 k-NN
+RUN chmod 755 ./setup-cluster.sh
+USER ci-runner
+ENTRYPOINT [ "./setup-cluster.sh", "-h", "16g", "-c", "50" ]
