@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euxo pipefail
 
 ENV_FILE=${1:-.env}
 
@@ -12,7 +13,7 @@ fi
 
 CONTAINER_NAME=${CONTAINER_NAME:-baseline-opensearch}
 OUTPUT_DIR=./metrics/${METRICS_OUTPUT_DIR:-./metrics}
-INTERVAL=${METRICS_INTERVAL:-5}
+INTERVAL=${METRICS_INTERVAL:-1}
 
 mkdir -p "$OUTPUT_DIR"
 sudo chown -R $(id -u):$(id -g) "$OUTPUT_DIR"
@@ -36,6 +37,10 @@ while true; do
   
   # Page faults
   docker exec $CONTAINER_NAME cat /proc/1/stat | awk '{print $10","$12}' >> "$OUTPUT_DIR/page_faults_${TIMESTAMP}.csv"
+  
+  # I/O operations (read/write syscalls)
+  docker exec $CONTAINER_NAME cat /proc/1/io >> "$OUTPUT_DIR/io_stats_${TIMESTAMP}.log"
+  echo "---$CURRENT_TIME---" >> "$OUTPUT_DIR/io_stats_${TIMESTAMP}.log"
   
   # OpenSearch JVM stats
   curl -s http://localhost:9200/_nodes/stats/jvm,os,process,fs?pretty >> "$OUTPUT_DIR/opensearch_stats_${TIMESTAMP}.json"

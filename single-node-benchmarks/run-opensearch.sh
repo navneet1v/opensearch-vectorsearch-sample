@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euxo pipefail
 
 ENV_FILE=${1:-.env}
 

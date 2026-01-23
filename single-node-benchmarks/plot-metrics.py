@@ -28,12 +28,33 @@ def parse_page_faults(file_path):
                 data.append({'minor': int(parts[0]), 'major': int(parts[1])})
     return pd.DataFrame(data)
 
+def parse_io_stats(file_path):
+    data = []
+    current_sample = {}
+    with open(file_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith('---'):
+                if current_sample:
+                    data.append(current_sample)
+                current_sample = {}
+            elif ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip()
+                value = value.strip()
+                if key in ['read_bytes', 'write_bytes', 'syscr', 'syscw']:
+                    current_sample[key] = int(value)
+        if current_sample:
+            data.append(current_sample)
+    return pd.DataFrame(data)
+
 def create_graphs(metrics_dir, output_file):
     metrics_path = Path(metrics_dir)
     
     # Find the latest metric files
     docker_stats = list(metrics_path.glob('docker_stats_*.csv'))
     page_faults = list(metrics_path.glob('page_faults_*.csv'))
+    io_stats = list(metrics_path.glob('io_stats_*.log'))
     
     if not docker_stats or not page_faults:
         print("Error: Metric files not found")
@@ -42,10 +63,11 @@ def create_graphs(metrics_dir, output_file):
     # Parse data
     df_stats = parse_docker_stats(docker_stats[0])
     df_faults = parse_page_faults(page_faults[0])
+    df_io = parse_io_stats(io_stats[0]) if io_stats else None
     
     # Create figure with subplots
-    fig = plt.figure(figsize=(16, 10))
-    gs = gridspec.GridSpec(2, 2, figure=fig, hspace=0.3, wspace=0.3)
+    fig = plt.figure(figsize=(20, 12))
+    gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.3, wspace=0.3)
     
     # CPU Usage
     ax1 = fig.add_subplot(gs[0, 0])
@@ -78,6 +100,31 @@ def create_graphs(metrics_dir, output_file):
     ax4.set_xlabel('Sample Number')
     ax4.set_ylabel('Count')
     ax4.grid(True, alpha=0.3)
+    
+    # I/O Stats - Read/Write Bytes
+    if df_io is not None and not df_io.empty:
+        ax5 = fig.add_subplot(gs[2, 0])
+        if 'read_bytes' in df_io.columns:
+            ax5.plot(df_io.index, df_io['read_bytes'] / (1024**2), color='purple', linewidth=2, label='Read')
+        if 'write_bytes' in df_io.columns:
+            ax5.plot(df_io.index, df_io['write_bytes'] / (1024**2), color='brown', linewidth=2, label='Write')
+        ax5.set_title('Disk I/O (Read/Write Bytes)', fontsize=14, fontweight='bold')
+        ax5.set_xlabel('Sample Number')
+        ax5.set_ylabel('MB')
+        ax5.legend()
+        ax5.grid(True, alpha=0.3)
+        
+        # I/O Stats - Syscalls
+        ax6 = fig.add_subplot(gs[2, 1])
+        if 'syscr' in df_io.columns:
+            ax6.plot(df_io.index, df_io['syscr'], color='teal', linewidth=2, label='Read Syscalls')
+        if 'syscw' in df_io.columns:
+            ax6.plot(df_io.index, df_io['syscw'], color='navy', linewidth=2, label='Write Syscalls')
+        ax6.set_title('I/O System Calls', fontsize=14, fontweight='bold')
+        ax6.set_xlabel('Sample Number')
+        ax6.set_ylabel('Count')
+        ax6.legend()
+        ax6.grid(True, alpha=0.3)
     
     # Add overall title
     fig.suptitle('OpenSearch Performance Metrics', fontsize=16, fontweight='bold', y=0.995)
