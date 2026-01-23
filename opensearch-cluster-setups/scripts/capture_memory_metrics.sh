@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Function to get the memory usage of a Docker container
 get_memory_usage() {
     container_id=$1

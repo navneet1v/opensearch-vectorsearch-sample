@@ -11,14 +11,14 @@
 set -ex
 
 build_knn() {
-    if [ "$OS_VERSION" == "2.14.0" ]
+    if [ "$OS_VERSION" == "2.17.0" ]
     then
         if [ "$MEMORY_FIX" == "true" ]
         then
             git clone https://github.com/navneet1v/k-NN.git  --branch memory-fix --recursive
         else
             KNN_BRANCH=$(echo "$OS_VERSION" | rev | cut -c3- | rev)
-            git clone https://github.com/opensearch-project/k-NN.git  --branch 2.x --recursive
+            git clone https://github.com/navneet1v/k-NN.git  --branch 2.17 --recursive
         fi
     else
         KNN_BRANCH=$(echo "$OS_VERSION" | rev | cut -c3- | rev)
@@ -32,7 +32,7 @@ build_knn() {
     gcc --version | head -n 1 | cut -d ' ' -f3
     echo "Running the scl_setup"
     # This is needed if you are using ci-image
-    bash /usr/local/bin/scl_setup
+    #bash /usr/local/bin/scl_setup
 
     chmod 755 ./scripts/build.sh
     ./scripts/build.sh -v "$OS_VERSION" -s "$IS_SNAPSHOT"
@@ -46,6 +46,7 @@ build_knn() {
 
 # For custom code of Opensearch, we will need to fix this function
 create_opensearch_min_dis() {
+    #https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.17.0/10207/linux/arm64/tar/dist/opensearch/opensearch-2.17.0-linux-arm64.tar.gz
     if [ "$IS_SNAPSHOT" == "true" ]
     then
         wget https://artifacts.opensearch.org/snapshots/core/opensearch/${OS_VERSION}-SNAPSHOT/opensearch-min-${OS_VERSION}-SNAPSHOT-linux-x64-latest.tar.gz

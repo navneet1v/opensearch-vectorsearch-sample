@@ -1,0 +1,17 @@
+FROM opensearchstaging/ci-runner:ci-runner-almalinux8-opensearch-build-v1
+USER root
+#RUN yum install jemalloc wget tar -y
+RUN yum install unzip procps jemalloc wget tar -y
+ENV JAVA_HOME="/opt/java/openjdk-21"
+ENV OS_VERSION="2.17.0"
+ENV IS_SNAPSHOT="false"
+ENV MEMORY_FIX="false"
+ADD build-opensearch.sh /
+RUN bash /build-opensearch.sh
+# Change ownership of folders to ci-runner user as opensearch cannot run as root
+ADD setup-cluster.sh /home/ci-runner
+RUN cd /home/ci-runner
+RUN chown -R 1000:1000 `pwd`
+USER ci-runner
+RUN chmod 755 ./setup-cluster.sh
+ENTRYPOINT [ "./setup-cluster.sh", "-h", "16g", "-c", "95" ]

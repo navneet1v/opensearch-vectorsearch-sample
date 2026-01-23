@@ -47,6 +47,7 @@ cluster.name: "opensearch"
 http.port: 9200
 discovery.type: single-node
 knn.faiss.avx2.disabled: true
+knn.algo_param.index_thread_qty: 2
 knn.memory.circuit_breaker.limit: $CB_LIMIT%
 EOT
 
