@@ -25,17 +25,18 @@ source "$ENV_FILE"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 TEST_SCENARIO=${TEST_SCENARIO:-memory-${MEMORY_LIMIT:-16g}-test}
 BENCHMARK_OUTPUT_DIR=./metrics/${TEST_SCENARIO}/${RUN_TYPE}/${TIMESTAMP}
+mkdir -p "$BENCHMARK_OUTPUT_DIR"
 
 # Start metrics collection in background
-bash collect-metrics.sh "$ENV_FILE" &
+bash collect-metrics.sh "$ENV_FILE" > "$BENCHMARK_OUTPUT_DIR/collect-metrics.log" 2>&1 &
 METRICS_PID=$!
-echo "Metrics collection started (PID: $METRICS_PID)"
+echo "Metrics collection started (PID: $METRICS_PID, log: $BENCHMARK_OUTPUT_DIR/collect-metrics.log)"
 
 # Start JFR capture if requested
 if [[ "$CAPTURE_JFR" == "--capture-jfr" ]]; then
-  bash capture-jfr.sh "$ENV_FILE" &
+  bash capture-jfr.sh "$ENV_FILE" > "$BENCHMARK_OUTPUT_DIR/capture-jfr.log" 2>&1 &
   JFR_PID=$!
-  echo "JFR capture started (PID: $JFR_PID)"
+  echo "JFR capture started (PID: $JFR_PID, log: $BENCHMARK_OUTPUT_DIR/capture-jfr.log)"
 fi
 
 # Run the benchmark
@@ -44,8 +45,8 @@ export WORKLOAD=/home/ec2-user/opensearch-benchmark-workloads/vectorsearch
 export ENDPOINT=http://localhost:9200
 
 echo "Running OpenSearch benchmark..."
-BENCHMARK_RESULTS="$BENCHMARK_OUTPUT_DIR/benchmark_results.json"
-opensearch-benchmark run --target-hosts $ENDPOINT --workload $WORKLOAD --workload-params ${PARAMS_FILE} --pipeline benchmark-only --kill-running-processes --test-procedure=search-only --results-file="$BENCHMARK_RESULTS"
+BENCHMARK_RESULTS="$BENCHMARK_OUTPUT_DIR/benchmark_results.csv"
+opensearch-benchmark run --target-hosts $ENDPOINT --workload $WORKLOAD --workload-params ${PARAMS_FILE} --pipeline benchmark-only --kill-running-processes --test-procedure=search-only --include-tasks "prod-queries" --results-format=csv --results-file="$BENCHMARK_RESULTS"
 
 echo "Benchmark completed. Stopping metrics collection..."
 
