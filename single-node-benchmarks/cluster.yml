@@ -1,0 +1,33 @@
+services:
+  opensearch-node1:
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION:-3.3.2}
+    container_name: ${CONTAINER_NAME:-opensearch-node1}
+    environment:
+      - cluster.name=${CLUSTER_NAME:-opensearch-cluster} # Name the cluster
+      - node.name=${NODE_NAME:-opensearch-node1} # Name the node that will run in this container
+      - discovery.seed_hosts=${DISCOVERY_HOSTS:-opensearch-node1} # Nodes to look for when discovering the cluster
+      - cluster.initial_cluster_manager_nodes=${CLUSTER_MANAGER_NODES:-opensearch-node1} # Nodes eligibile to serve as cluster manager
+      - bootstrap.memory_lock=true # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms${HEAP_SIZE:-8g} -Xmx${HEAP_SIZE:-8g}" # Set min and max JVM heap sizes to at least 50% of system RAM
+      - "DISABLE_INSTALL_DEMO_CONFIG=true" # Prevents execution of bundled demo script which installs demo certificates and security configurations to OpenSearch
+      - "DISABLE_SECURITY_PLUGIN=${DISABLE_SECURITY:-true}" # Disables Security plugin
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT:-16g}
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - ${DATA_PATH:-./opensearch-data}:/usr/share/opensearch/data # Creates volume called opensearch-data1 and mounts it to the container
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600
+    networks:
+      - opensearch-net # All of the containers will join the same Docker bridge network
+networks:
+  opensearch-net:
