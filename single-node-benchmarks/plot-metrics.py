@@ -11,7 +11,9 @@ from datetime import datetime
 def parse_docker_stats(file_path):
     data = []
     with open(file_path, 'r') as f:
-        for line in f:
+        lines = f.readlines()
+        # Skip header line
+        for line in lines[1:]:
             parts = line.strip().split(',')
             if len(parts) >= 6:
                 cpu = float(parts[1].replace('%', ''))
@@ -22,7 +24,9 @@ def parse_docker_stats(file_path):
 def parse_page_faults(file_path):
     data = []
     with open(file_path, 'r') as f:
-        for line in f:
+        lines = f.readlines()
+        # Skip header line
+        for line in lines[1:]:
             parts = line.strip().split(',')
             if len(parts) >= 2:
                 data.append({'minor': int(parts[0]), 'major': int(parts[1])})

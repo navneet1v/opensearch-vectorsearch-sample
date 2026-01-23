@@ -12,13 +12,19 @@ else
 fi
 
 CONTAINER_NAME=${CONTAINER_NAME:-baseline-opensearch}
-OUTPUT_DIR=./metrics/${METRICS_OUTPUT_DIR:-./metrics}
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+TEST_SCENARIO=${TEST_SCENARIO:-memory-${MEMORY_LIMIT:-16g}-test}
+RUN_TYPE=${RUN_TYPE:-baseline}
+OUTPUT_DIR=./metrics/${TEST_SCENARIO}/${RUN_TYPE}/${TIMESTAMP}
 INTERVAL=${METRICS_INTERVAL:-1}
 
 mkdir -p "$OUTPUT_DIR"
 sudo chown -R $(id -u):$(id -g) "$OUTPUT_DIR"
 sudo chmod -R 755 "$OUTPUT_DIR"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Write CSV headers
+echo "container,cpu_percent,memory_usage,memory_percent,network_io,block_io" > "$OUTPUT_DIR/docker_stats_${TIMESTAMP}.csv"
+echo "minor_faults,major_faults" > "$OUTPUT_DIR/page_faults_${TIMESTAMP}.csv"
 
 echo "Collecting metrics for container: $CONTAINER_NAME"
 echo "Output directory: $OUTPUT_DIR"
@@ -44,9 +50,6 @@ while true; do
   
   # OpenSearch JVM stats
   curl -s http://localhost:9200/_nodes/stats/jvm,os,process,fs?pretty >> "$OUTPUT_DIR/opensearch_stats_${TIMESTAMP}.json"
-  
-  # OpenSearch cluster health
-  curl -s http://localhost:9200/_cluster/health?pretty >> "$OUTPUT_DIR/cluster_health_${TIMESTAMP}.json"
   
   sleep $INTERVAL
 done

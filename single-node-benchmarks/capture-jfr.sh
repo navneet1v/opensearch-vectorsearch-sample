@@ -13,7 +13,9 @@ fi
 
 CONTAINER_NAME=${CONTAINER_NAME:-baseline-opensearch}
 DURATION=${JFR_DURATION:-60}
-OUTPUT_DIR=./metrics/jfr/${JFR_OUTPUT_DIR:-./jfr}
+TEST_SCENARIO=${TEST_SCENARIO:-memory-${MEMORY_LIMIT:-16g}-test}
+RUN_TYPE=${RUN_TYPE:-baseline}
+OUTPUT_DIR=./jfr/${TEST_SCENARIO}/${RUN_TYPE}
 
 mkdir -p "$OUTPUT_DIR"
 sudo chown -R $(id -u):$(id -g) "$OUTPUT_DIR"
