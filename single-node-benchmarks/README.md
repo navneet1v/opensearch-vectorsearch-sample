@@ -52,7 +52,7 @@ JFR_DURATION=60
 
 **Terminal 1 - Start Baseline OpenSearch:**
 ```bash
-bash run-opensearch.sh baseline.env
+bash run-opensearch.sh --env baseline.env
 ```
 
 **Terminal 2 - Collect Baseline Metrics:**
@@ -83,7 +83,7 @@ bash stop-opensearch.sh
 
 **Terminal 1 - Start Candidate OpenSearch:**
 ```bash
-bash run-opensearch.sh candidate.env
+bash run-opensearch.sh --env candidate.env
 ```
 
 **Terminal 2 - Collect Candidate Metrics:**
@@ -151,8 +151,27 @@ Review metrics:
 
 ### run-opensearch.sh
 Starts OpenSearch container with configuration from env file.
+
+**Usage:**
 ```bash
-bash run-opensearch.sh <env-file>
+bash run-opensearch.sh --env <env-file> [--heap <size>]
+```
+
+**Options:**
+- `--env, -e <file>` - Environment file to load (default: .env)
+- `--heap <size>` - Override heap size from env file (e.g., 12g)
+
+**Examples:**
+```bash
+# Use default .env file
+bash run-opensearch.sh
+
+# Use custom env file
+bash run-opensearch.sh --env baseline.env
+bash run-opensearch.sh -e baseline.env
+
+# Override heap size
+bash run-opensearch.sh --env baseline.env --heap 12g
 ```
 
 ### stop-opensearch.sh

@@ -5,9 +5,9 @@ set -euxo pipefail
 RUN_TYPE=${1:-baseline}
 CAPTURE_JFR=${2:-}
 
-if [[ "$RUN_TYPE" != "baseline" && "$RUN_TYPE" != "candidate" ]]; then
-  echo "Error: First argument must be 'baseline' or 'candidate'"
-  echo "Usage: bash run-search-benchmarks.sh <baseline|candidate> [--capture-jfr]"
+if [[ "$RUN_TYPE" != "baseline" && "$RUN_TYPE" != "candidate" && "$RUN_TYPE" != "candidate-prefetch" ]]; then
+  echo "Error: First argument must be 'baseline' or 'candidate' or 'candidate-prefetch'"
+  echo "Usage: bash run-search-benchmarks.sh <baseline|candidate|candidate-prefetch> [--capture-jfr]"
   exit 1
 fi
 

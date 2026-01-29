@@ -1,7 +1,28 @@
 #!/bin/bash
 set -euxo pipefail
 
-ENV_FILE=${1:-.env}
+# Usage: bash run-opensearch.sh --env <env-file> [--heap <size>]
+ENV_FILE=".env"
+HEAP_SIZE_OVERRIDE=""
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --env|-e)
+      ENV_FILE="$2"
+      shift 2
+      ;;
+    --heap)
+      HEAP_SIZE_OVERRIDE="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: bash run-opensearch.sh --env <env-file> [--heap <size>]"
+      exit 1
+      ;;
+  esac
+done
 
 if [ -f "$ENV_FILE" ]; then
   export $(cat "$ENV_FILE" | grep -v '^#' | xargs)
@@ -9,6 +30,14 @@ if [ -f "$ENV_FILE" ]; then
   cat "$ENV_FILE" | grep -v '^#' | grep -v '^$'
 else
   echo "Warning: $ENV_FILE not found, using defaults"
+  exit 1
+fi
+
+# Override heap size if provided as command line argument
+if [ -n "$HEAP_SIZE_OVERRIDE" ]; then
+  echo "Overriding HEAP_SIZE from : $HEAP_SIZE to $HEAP_SIZE_OVERRIDE"
+  export HEAP_SIZE="$HEAP_SIZE_OVERRIDE"
+  echo "New HEAP_SIZE is: $HEAP_SIZE"
 fi
 
 DATA_DIR=${DATA_PATH:-./opensearch-data}
